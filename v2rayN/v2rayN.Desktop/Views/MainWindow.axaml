@@ -52,7 +52,7 @@
                         <MenuItem x:Name="menuAddAnytlsServer" Header="{x:Static resx:ResUI.menuAddAnytlsServer}" />
                     </MenuItem>
 
-                    <MenuItem Header="{x:Static resx:ResUI.menuSubscription}">
+                    <MenuItem Header="{x:Static resx:ResUI.menuSubscription}" IsVisible="False">
                         <MenuItem x:Name="menuSubSetting" Header="{x:Static resx:ResUI.menuSubSetting}" />
                         <Separator />
                         <MenuItem x:Name="menuSubUpdate" Header="{x:Static resx:ResUI.menuSubUpdate}" />
@@ -78,10 +78,10 @@
                         <MenuItem
                             x:Name="menuSettingsSetUWP"
                             Header="{x:Static resx:ResUI.TbSettingsSetUWP}"
-                            IsVisible="{Binding BlIsWindows}" />
+                            IsVisible="False" />
                         <MenuItem x:Name="menuClearServerStatistics" Header="{x:Static resx:ResUI.menuClearServerStatistics}" />
                         <Separator />
-                        <MenuItem Header="{x:Static resx:ResUI.menuRegionalPresets}">
+                        <MenuItem Header="{x:Static resx:ResUI.menuRegionalPresets}" IsVisible="False">
                             <MenuItem x:Name="menuRegionalPresetsDefault" Header="{x:Static resx:ResUI.menuRegionalPresetsDefault}" />
                             <MenuItem x:Name="menuRegionalPresetsRussia" Header="{x:Static resx:ResUI.menuRegionalPresetsRussia}" />
                             <MenuItem x:Name="menuRegionalPresetsIran" Header="{x:Static resx:ResUI.menuRegionalPresetsIran}" />
@@ -92,12 +92,12 @@
 
                     <MenuItem x:Name="menuHelp" Header="{x:Static resx:ResUI.menuHelp}">
                         <MenuItem x:Name="menuCheckUpdate" Header="{x:Static resx:ResUI.menuCheckUpdate}" />
-                        <Separator />
+                        <Separator IsVisible="False" />
                     </MenuItem>
 
                     <MenuItem x:Name="menuReload" Header="{x:Static resx:ResUI.menuReload}" />
 
-                    <MenuItem x:Name="menuPromotion" Header="{x:Static resx:ResUI.menuPromotion}" />
+                    <MenuItem x:Name="menuPromotion" Header="{x:Static resx:ResUI.menuPromotion}" IsVisible="False" />
 
                     <MenuItem x:Name="menuClose" Header="{x:Static resx:ResUI.menuExit}" />
                 </Menu>

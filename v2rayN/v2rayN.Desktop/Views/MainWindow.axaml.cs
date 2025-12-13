@@ -169,7 +169,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
             WindowState = WindowState.Minimized;
         }
 
-        AddHelpMenuItem();
+        //AddHelpMenuItem();
     }
 
     #region Event
