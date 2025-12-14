@@ -1,0 +1,43 @@
+name: Sync upstream and rebase patch
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'   # 每 6 小时检查一次 upstream
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout patch branch
+      uses: actions/checkout@v4
+      with:
+        ref: patch
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Add and fetch upstream
+      run: |
+        git remote add upstream https://github.com/2dust/v2rayN.git || true
+        git fetch upstream
+
+    - name: Sync master with upstream
+      run: |
+        git checkout master
+        git reset --hard upstream/master
+        git push origin master --force
+
+    - name: Rebase patch onto master
+      run: |
+        git checkout patch
+        git rebase master
+
+    - name: Push rebased patch
+      run: |
+        git push origin patch --force-with-lease
