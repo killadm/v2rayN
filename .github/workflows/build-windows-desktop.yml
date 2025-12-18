@@ -1,71 +1,108 @@
-name: release Windows desktop (Avalonia UI)
+name: Build Windows desktop (Avalonia UI)
 
 on:
+  # 手动触发（可用于发布）
   workflow_dispatch:
     inputs:
       release_tag:
+        description: "Optional release tag (e.g. v2.31.0-patch1)"
         required: false
         type: string
-  push:
-    branches:
-      - patch
+
+  # 当 sync-upstream workflow 成功完成时自动触发
+  workflow_run:
+    workflows:
+      - "Sync upstream and rebase patch"
+    types:
+      - completed
 
 env:
   OutputArch: "windows-64"
   OutputArchArm: "windows-arm64"
-  OutputPath64:  "${{ github.workspace }}/v2rayN/Release/windows-64"
-  OutputPathArm64:  "${{ github.workspace }}/v2rayN/Release/windows-arm64"
+  OutputPath64: "${{ github.workspace }}/v2rayN/Release/windows-64"
+  OutputPathArm64: "${{ github.workspace }}/v2rayN/Release/windows-arm64"
 
 jobs:
   build:
+    # 只在 sync-upstream 成功时运行
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    runs-on: ubuntu-latest
+
     strategy:
       matrix:
         configuration: [Release]
 
-    runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v6.0.1
+    - name: Checkout patch branch
+      uses: actions/checkout@v4
       with:
-        submodules: 'recursive'
-        fetch-depth: '0'
+        ref: patch
+        submodules: recursive
+        fetch-depth: 0
 
-    - name: Setup
-      uses: actions/setup-dotnet@v5.0.1
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '8.0.x'
 
-    - name: Build
+    - name: Build Windows desktop
       run: |
-        cd v2rayN 
-        dotnet publish ./v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-x64   -p:SelfContained=true -p:EnableWindowsTargeting=true -o $OutputPath64
-        dotnet publish ./v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o $OutputPathArm64
-        dotnet publish ./AmazTool/AmazTool.csproj             -c Release -r win-x64   -p:SelfContained=true -p:EnableWindowsTargeting=true -p:PublishTrimmed=true -o $OutputPath64
-        dotnet publish ./AmazTool/AmazTool.csproj             -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:PublishTrimmed=true -o $OutputPathArm64
+        cd v2rayN
+
+        dotnet publish ./v2rayN.Desktop/v2rayN.Desktop.csproj \
+          -c Release -r win-x64 \
+          -p:SelfContained=true \
+          -p:EnableWindowsTargeting=true \
+          -o "$OutputPath64"
+
+        dotnet publish ./v2rayN.Desktop/v2rayN.Desktop.csproj \
+          -c Release -r win-arm64 \
+          -p:SelfContained=true \
+          -p:EnableWindowsTargeting=true \
+          -o "$OutputPathArm64"
+
+        dotnet publish ./AmazTool/AmazTool.csproj \
+          -c Release -r win-x64 \
+          -p:SelfContained=true \
+          -p:EnableWindowsTargeting=true \
+          -p:PublishTrimmed=true \
+          -o "$OutputPath64"
+
+        dotnet publish ./AmazTool/AmazTool.csproj \
+          -c Release -r win-arm64 \
+          -p:SelfContained=true \
+          -p:EnableWindowsTargeting=true \
+          -p:PublishTrimmed=true \
+          -o "$OutputPathArm64"
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v5.0.0
+      uses: actions/upload-artifact@v5
       with:
-        name: v2rayN-windows-desktop
+        name: v2rayN-windows-desktop-${{ github.sha }}
         path: |
-          ${{ github.workspace }}/v2rayN/Release/windows*
+          v2rayN/Release/windows*
 
-    # release zip archive
+    # 以下步骤：仅在手动指定 release_tag 时才执行
     - name: Package release zip archive
       if: github.event.inputs.release_tag != ''
       run: |
-        chmod 755 package-release-zip.sh
-        ./package-release-zip.sh $OutputArch $OutputPath64
+        chmod +x package-release-zip.sh
+
+        ./package-release-zip.sh "$OutputArch" "$OutputPath64"
         mv "v2rayN-${OutputArch}.zip" "v2rayN-${OutputArch}-desktop.zip"
-        ./package-release-zip.sh $OutputArchArm $OutputPathArm64
+
+        ./package-release-zip.sh "$OutputArchArm" "$OutputPathArm64"
         mv "v2rayN-${OutputArchArm}.zip" "v2rayN-${OutputArchArm}-desktop.zip"
 
-    - name: Upload zip archive to release
-      uses: svenstaro/upload-release-action@v2
+    - name: Upload zip archive to GitHub Release
       if: github.event.inputs.release_tag != ''
+      uses: svenstaro/upload-release-action@v2
       with:
-        file: ${{ github.workspace }}/v2rayN*.zip
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.event.inputs.release_tag }}
+        file: v2rayN-*-desktop.zip
         file_glob: true
         prerelease: true
