@@ -54,23 +54,55 @@ internal static class WindowsUtils
 
     public static async Task RemoveTunDevice()
     {
-        var tunNameList = new List<string> { "wintunsingbox_tun", "xray_tun" };
-        foreach (var tunName in tunNameList)
+        try
         {
-            try
-            {
-                var sum = MD5.HashData(Encoding.UTF8.GetBytes(tunName));
-                var guid = new Guid(sum);
-                var pnpUtilPath = @"C:\Windows\System32\pnputil.exe";
-                var arg = $$""" /remove-device  "SWD\Wintun\{{{guid}}}" """;
+            var sum = MD5.HashData(Encoding.UTF8.GetBytes("wintunsingbox_tun"));
+            var guid = new Guid(sum);
+            var pnpUtilPath = @"C:\Windows\System32\pnputil.exe";
+            var arg = $$""" /remove-device  "SWD\Wintun\{{{guid}}}" """;
 
-                // Try to remove the device
-                _ = await Utils.GetCliWrapOutput(pnpUtilPath, arg);
-            }
-            catch (Exception ex)
+            // Try to remove the device
+            _ = await Utils.GetCliWrapOutput(pnpUtilPath, arg);
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+        }
+    }
+
+    public static string GetFreeEthernetName()
+    {
+        try
+        {
+            var interfaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+            var usedNames = new HashSet<string>(interfaces.Select(i => i.Name));
+
+            string baseName = "Ethernet";
+            if (System.Globalization.CultureInfo.InstalledUICulture.Name.StartsWith("zh"))
             {
-                Logging.SaveLog(_tag, ex);
+                baseName = "以太网";
             }
+
+            if (!usedNames.Contains(baseName))
+            {
+                return baseName;
+            }
+
+            int i = 2;
+            while (true)
+            {
+                string name = $"{baseName} {i}";
+                if (!usedNames.Contains(name))
+                {
+                    return name;
+                }
+                i++;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+            return "singbox_tun";
         }
     }
 }

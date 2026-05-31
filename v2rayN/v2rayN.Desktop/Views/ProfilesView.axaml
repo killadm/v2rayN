@@ -32,9 +32,9 @@
 
                     <ListBox.ContextMenu>
                         <ContextMenu>
-                            <MenuItem x:Name="menuSubEdit" Header="{x:Static resx:ResUI.menuSubEdit}" />
-                            <MenuItem x:Name="menuSubAdd" Header="{x:Static resx:ResUI.menuSubAdd}" />
-                            <MenuItem x:Name="menuSubDelete" Header="{x:Static resx:ResUI.menuSubDelete}" />
+                            <MenuItem x:Name="menuSubEdit" Header="{x:Static resx:ResUI.menuSubEdit}" IsVisible="False" />
+                            <MenuItem x:Name="menuSubAdd" Header="{x:Static resx:ResUI.menuSubAdd}" IsVisible="False" />
+                            <MenuItem x:Name="menuSubDelete" Header="{x:Static resx:ResUI.menuSubDelete}" IsVisible="False" />
                         </ContextMenu>
                     </ListBox.ContextMenu>
                 </ListBox>
@@ -255,6 +255,7 @@
                         Width="100"
                         Binding="{Binding SubRemarks}"
                         Header="{x:Static resx:ResUI.LvSubscription}"
+                        IsVisible="False"
                         Tag="SubRemarks" />
                     <DataGridTemplateColumn SortMemberPath="Delay" Tag="DelayVal">
                         <DataGridTemplateColumn.Header>
